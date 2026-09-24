@@ -491,11 +491,11 @@ User: DESKTOP-BP3ESIC\username
 
 ---
 
-### 3.3 Hunting Phase — Splunk (`index=main`, `sourcetype="WinEventLog:Microsoft-Windows-Sysmon/Operational"`, `host=DESKTOP-BP3ESIC`)
+### 4 Hunting Phase — Splunk (`index=main`, `sourcetype="WinEventLog:Microsoft-Windows-Sysmon/Operational"`, `host=DESKTOP-BP3ESIC`)
 
 After collecting the endpoint evidence, I moved the investigation into Splunk. The goal was to correlate the individual Sysmon events and confirm the full sequence of activity instead of relying on a single alert.
 
-#### 3.3.1 Full activity timeline for the payload
+#### 4.1 Full activity timeline for the payload
 
 I started with a broad Splunk search for events related to `stageless.exe`. This helped me reconstruct when the payload executed, connected to the Kali host, created the secondary tool, spawned a shell, and terminated.
 
@@ -531,7 +531,7 @@ This single search shows **three distinct execution cycles** of `stageless.exe`
 (≈11:51, ≈18:52, ≈19:00), each following the identical pattern:
 `DNS query (22) → Network connect (3) → drop mimikatz (11) → [spawn cmd.exe (1)] → terminate (5)`.
 
-#### 3.3.2 Confirming the Mimikatz drop
+#### 4.2 Confirming the Mimikatz drop
 
 I then narrowed the search to Event ID 11 and `mimikatz.exe`. This confirmed that the credential-dumping tool was created by the `stageless.exe` process on the Windows host.
 
@@ -549,7 +549,7 @@ _time                     Image                                    TargetFilenam
 2026-09-24 11:52:29.929   C:\Users\username\Downloads\stageless.exe   C:\Users\Public\mimikatz.exe     2026-09-24 06:22:29.926   DESKTOP-BP3ESIC\username
 ```
 
-#### 3.3.3 Confirming C2 beaconing to the attacker
+#### 4.3 Confirming C2 beaconing to the attacker
 
 Next, I searched for outbound connections to the Kali IP on port `4444`. The results matched the Meterpreter callback observed earlier, confirming the C2 communication from the Windows host.
 
@@ -568,7 +568,7 @@ _time                     Image                                    SourceIp     
 2026-09-24 19:00:41.027   C:\Users\username\Downloads\stageless.exe   192.168.133.136  192.168.133.142   4444              DESKTOP-BP3ESIC\username
 ```
 
-#### 3.3.4 Confirming process termination / kill events
+#### 4.4 Confirming process termination / kill events
 
 Finally, I searched for Sysmon Event ID 5 to confirm when the malicious process stopped. The results showed the termination of the same `stageless.exe` processes identified during the earlier investigation.
 
@@ -596,7 +596,7 @@ session, confirming three complete process lifecycles (spawn → beacon → drop
 
 After using Splunk to confirm the process activity, C2 connections, and termination events, I performed the containment step on the Windows victim by locating `stageless.exe` and terminating it with `taskkill`. This connected the SOC investigation with a practical endpoint response action.
 
-#### 3.3.5 Manual Response — Killing the Process (Administrator Command Prompt)
+#### 4.5 Manual Response — Killing the Process (Administrator Command Prompt)
 
 After identifying the malicious process, I tested a basic containment response by locating `stageless.exe` and terminating it with `taskkill`. Sysmon then recorded the process termination, allowing the response action to be verified in the logs.
 
@@ -649,7 +649,7 @@ Image: C:\Users\username\Downloads\stageless.exe
 User: DESKTOP-BP3ESIC\username
 ```
 
-### 4 Indicators of Compromise (IOC) Summary
+### 5 Indicators of Compromise (IOC) Summary
 
 I collected the main indicators from the investigation so they could be used for future searches or detection rules. These include the payload name and hashes, delivery URL, C2 address and port, dropped Mimikatz file, and affected host information.
 
@@ -670,7 +670,7 @@ I collected the main indicators from the investigation so they could be used for
 
 ---
 
-### 5 Consolidated Timeline
+### 6 Consolidated Timeline
 
 I connected the attack-side activity with the detection-side evidence so the timeline shows what happened first and how the same activity appeared in Wireshark, Sysmon, VirusTotal, and Splunk. The Metasploit timestamps shown with `-0400` are aligned with the Sysmon UTC timestamps below.
 
@@ -695,7 +695,7 @@ This correlation shows the complete flow: **HTTP delivery → file download → 
 
 ---
 
-### 6 Detection & Response Recommendations
+### 7 Detection & Response Recommendations
 
 Based on the activity observed during the lab, I noted several practical detection and response ideas. These focus on the network connection, downloaded executable, suspicious file creation, process behavior, and Splunk correlation opportunities.
 
