@@ -1,6 +1,6 @@
 # Basic Attack & Detection Lab: SOC Log Analysis, Malware Behavior & Incident Response
 
-> Date and Timestamp's are old and new because it shown fix of old and new logs but process is same.
+> Date and Timestamp's are old and new because it shown old and new logs but process is same.
 
 
 > **Lab classification:** Adversary simulation / malware-behavior analysis with SOC telemetry, Sysmon detection, Splunk threat hunting, and incident response.
